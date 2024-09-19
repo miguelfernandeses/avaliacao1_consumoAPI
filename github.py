@@ -1,23 +1,51 @@
 import requests
 
-print('GitHub Users\n')
 
-username = input('Qual é o nome do usuario?')
+def obter_dados_usuario_github(username):
+    url = f'https://api.github.com/users/{username}'
+    
 
-print(username)
+    try:
+        response = requests.get(url)
+        response.raise_for_status() # Levanta um erro para códigos de status 4xx/5xx
+        data = response.json()
 
-url = f'https://api.github.com/users/{username}'
 
-response = requests.get(url)
-data = response.json()
+        if"message" in data and data["message"] == "Not Found":
+            print("Usuário não encontrado!")
+            return None
+        
+        return data
+    
 
-if response.status_code == 200:
-    #print(data)
-    print(f'\n Nome completo: {data["name"]}')
-    print(f'Bio: {data["bio"]}')
-    print(f'localização: {data["location"]}')
-    print(f'Seguidores: {data["followers"]}')
-    print(f'Seguindo: {data["following"]}')
-else:
-    print('Não foi possível encontrar o usuario!')
+    except requests.exceptions.RequestException as e:
+        print(f'Erro ao acessar a API: {e}')
+        return None
+    
 
+def exibir_dados_usuario(data):
+    if data:
+        print(f'\n Nome completo: {data.get("name", "Não disponível")}')
+        
+        print(f'Bio: {data.get("bio", "Não disponível")}')
+        print(f'Localização: {data.get("location", "Não disponível")}')
+        print(f'Seguidores: {data.get("followers", 0)}')
+        print(f'Seguindo: {data.get("following", 0)}')
+    else:
+        print('Não foi possível encontrar o usuario!')
+
+def main():
+    print('GitHub Users\n')
+    username = input('Qual é o nome do usuário?').strip()
+
+
+    if not username:
+        print('Nome de usuário inválido!')
+        return
+    
+    dados_usuario = obter_dados_usuario_github(username)
+    exibir_dados_usuario(dados_usuario)
+
+
+if __name__ == "__main__":
+    main()
